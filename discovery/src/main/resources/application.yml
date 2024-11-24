@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: discovery
+  profiles:
+    active: native
+  cloud:
+    config:
+      server:
+        native:
+          searchLocations:
+            - classpath:/config/
+            - file:./config/
+
+server:
+  port: 8761
+
+eureka:
+  dashboard:
+    path: /dashboard/
+    enabled: true
+
+  client:
+    enabled: true  # Включаем клиента Eureka (чтобы приложение взаимодействовало с Eureka-сервером)
+    registerWithEureka: true  # Регистрируем приложение в Eureka (чтобы оно стало доступным для других сервисов)
+    fetchRegistry: false  # Не нужно загружать реестр, так как это сервер Eureka
+
+  server:
+    waitTimeInMsWhenSyncEmpty: 0
+
+# could be used for debugging
+#logging:
+#  level:
+#    org:
+#      springframework: TRACE
