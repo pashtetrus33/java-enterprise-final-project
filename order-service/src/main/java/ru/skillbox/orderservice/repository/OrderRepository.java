@@ -2,8 +2,8 @@ package ru.skillbox.orderservice.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import ru.skillbox.orderservice.domain.Order;
-import ru.skillbox.orderservice.domain.OrderStatusHistory;
+import ru.skillbox.orderservice.model.Order;
+import ru.skillbox.orderservice.model.OrderStatusHistory;
 
 import java.util.List;
 import java.util.Optional;

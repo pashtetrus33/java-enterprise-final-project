@@ -1,29 +1,28 @@
 package ru.skillbox.orderservice.service;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import ru.skillbox.orderservice.domain.OrderKafkaDto;
+import ru.skillbox.orderservice.dto.PaymentKafkaDto;
 
 @Service
+@RequiredArgsConstructor
 public class KafkaServiceImpl implements KafkaService {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaServiceImpl.class);
 
-    @Value("${spring.kafka.topic}")
+    @Value("${spring.kafka.payment-service-topic}")
     private String kafkaTopic;
 
-    private final KafkaTemplate<Long, OrderKafkaDto> kafkaTemplate;
+    private final KafkaTemplate<Long, PaymentKafkaDto> kafkaTemplate;
 
-    public KafkaServiceImpl(KafkaTemplate<Long, OrderKafkaDto> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
-    }
 
     @Override
-    public void produce(OrderKafkaDto orderKafkaDto) {
-        kafkaTemplate.send(kafkaTopic, orderKafkaDto);
-        logger.info("Sent message to Kafka -> '{}'", orderKafkaDto);
+    public void produce(PaymentKafkaDto kafkaDto) {
+        kafkaTemplate.send(kafkaTopic, kafkaDto);
+        logger.info("Sent message to Kafka -> '{}'", kafkaDto);
     }
 }

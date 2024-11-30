@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import ru.skillbox.authservice.domain.User;
 
 import java.util.Date;
 
@@ -23,12 +24,13 @@ public class JwtUtil {
         return new Date(System.currentTimeMillis() + expirationTime);
     }
 
-    public String generateToken(String subject) {
+    public String generateToken(User user) {
         return JWT.create()
                 .withIssuer("http://skillbox.ru")
                 .withIssuedAt(new Date())
                 .withExpiresAt(makeExpirationDate())
-                .withSubject(subject)
+                .withSubject(user.getName())
+                .withClaim("id", user.getId())
                 .withExpiresAt(makeExpirationDate())
                 .sign(algorithm);
     }

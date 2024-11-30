@@ -3,14 +3,19 @@ package ru.skillbox.orderservice.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.orderservice.controller.OrderNotFoundException;
-import ru.skillbox.orderservice.domain.*;
+import ru.skillbox.orderservice.model.*;
+import ru.skillbox.orderservice.dto.OrderDto;
+import ru.skillbox.orderservice.dto.PaymentKafkaDto;
+import ru.skillbox.orderservice.dto.StatusDto;
+import ru.skillbox.orderservice.model.enums.OrderStatus;
+import ru.skillbox.orderservice.model.enums.ServiceName;
 import ru.skillbox.orderservice.repository.OrderRepository;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -29,20 +34,28 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public Optional<Order> addOrder(OrderDto orderDto) {
-            Order newOrder = new Order(
-                    orderDto.getDepartureAddress(),
-                    orderDto.getDestinationAddress(),
-                    orderDto.getDescription(),
-                    orderDto.getCost(),
-                    OrderStatus.REGISTERED
-            );
-            newOrder.addStatusHistory(newOrder.getStatus(), ServiceName.ORDER_SERVICE, "Order created");
-            newOrder.setCreationTime(LocalDateTime.now());
-            newOrder.setModifiedTime(LocalDateTime.now());
-            Order order = orderRepository.save(newOrder);
-            kafkaService.produce(OrderKafkaDto.toKafkaDto(order));
-            return Optional.of(order);
+    public Optional<Order> addOrder(OrderDto orderDto, HttpServletRequest request) {
+
+        Long userId = Long.valueOf(request.getHeader("id"));
+        String authHeaderValue = request.getHeader("Authorization");
+
+        Order newOrder = new Order(
+                orderDto.getDepartureAddress(),
+                orderDto.getDestinationAddress(),
+                orderDto.getDescription(),
+                orderDto.getCost(),
+                userId,
+                OrderStatus.REGISTERED
+        );
+        newOrder.addStatusHistory(newOrder.getStatus(), ServiceName.ORDER_SERVICE, "Order created");
+        newOrder.setCreationTime(LocalDateTime.now());
+        newOrder.setModifiedTime(LocalDateTime.now());
+        Order savedOrder = orderRepository.save(newOrder);
+
+        PaymentKafkaDto paymentKafkaDto = createPaymentKafkaDto(userId, orderDto, savedOrder.getId(), authHeaderValue);
+        kafkaService.produce(paymentKafkaDto);
+
+        return Optional.of(savedOrder);
     }
 
     @Transactional
@@ -56,7 +69,28 @@ public class OrderServiceImpl implements OrderService {
         }
         order.setStatus(statusDto.getStatus());
         order.addStatusHistory(statusDto.getStatus(), statusDto.getServiceName(), statusDto.getComment());
-        Order resultOrder = orderRepository.save(order);
-        kafkaService.produce(OrderKafkaDto.toKafkaDto(resultOrder));
+        orderRepository.save(order);
+    }
+
+    private PaymentKafkaDto createPaymentKafkaDto(Long userId, OrderDto orderDto, Long orderId, String authHeaderValue) {
+
+        PaymentKafkaDto paymentKafkaDto = new PaymentKafkaDto();
+        paymentKafkaDto.setUserId(userId);
+        paymentKafkaDto.setOrderId(orderId);
+        paymentKafkaDto.setOrderDto(orderDto);
+        paymentKafkaDto.setAuthHeaderValue(authHeaderValue);
+
+        return paymentKafkaDto;
+    }
+
+    @Override
+    public List<Order> findAll() {
+        return orderRepository.findAll();
+    }
+
+    @Override
+    public Order findById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
     }
 }

@@ -1,10 +1,13 @@
-package ru.skillbox.orderservice.domain;
+package ru.skillbox.orderservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import ru.skillbox.orderservice.model.enums.OrderStatus;
+import ru.skillbox.orderservice.model.enums.ServiceName;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -35,6 +38,9 @@ public class Order {
     @Column(name = "cost")
     private Long cost;
 
+    @JsonIgnore
+    private Long userId;
+
     @CreationTimestamp
     @Column(name = "creation_time")
     private LocalDateTime creationTime;
@@ -59,12 +65,14 @@ public class Order {
             String destinationAddress,
             String description,
             Long cost,
+            Long userId,
             OrderStatus status
     ) {
         this.departureAddress = departureAddress;
         this.destinationAddress = destinationAddress;
         this.description = description;
         this.cost = cost;
+        this.userId = userId;
         this.status = status;
     }
 

@@ -42,7 +42,7 @@ public class TokenController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         final String token = userRepository.findByName(loginUser.getName())
-                .map(user -> jwtUtil.generateToken(user.getName()))
+                .map(jwtUtil::generateToken)
                 .orElseThrow(() -> new BadCredentialsException("User not found"));
 
         return ResponseEntity.ok(token);

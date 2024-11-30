@@ -1,8 +1,8 @@
 package ru.skillbox.orderservice.service;
 
-import ru.skillbox.orderservice.domain.OrderKafkaDto;
+import ru.skillbox.orderservice.dto.PaymentKafkaDto;
 
 public interface KafkaService {
 
-    void produce(OrderKafkaDto orderKafkaDto);
+    void produce(PaymentKafkaDto paymentKafkaDto);
 }

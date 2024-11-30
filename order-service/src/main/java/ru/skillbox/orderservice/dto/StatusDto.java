@@ -1,8 +1,10 @@
-package ru.skillbox.orderservice.domain;
+package ru.skillbox.orderservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.skillbox.orderservice.model.enums.OrderStatus;
+import ru.skillbox.orderservice.model.enums.ServiceName;
 
 @Data
 @AllArgsConstructor
@@ -14,8 +16,4 @@ public class StatusDto {
     private ServiceName serviceName;
 
     private String comment;
-
-    public StatusDto(OrderStatus status) {
-        this.status = status;
-    }
 }
