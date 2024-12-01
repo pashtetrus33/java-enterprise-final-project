@@ -1,4 +1,4 @@
-package ru.skillbox.orderservice.model.enums;
+package ru.skillbox.orderservice.dto.enums;
 
 public enum OrderStatus {
     REGISTERED,
@@ -7,5 +7,6 @@ public enum OrderStatus {
     INVENTED,
     INVENTMENT_FAILED,
     DELIVERED,
-    DELIVERY_FAILED;
+    DELIVERY_FAILED,
+    UNEXPECTED_FAILURE;
 }

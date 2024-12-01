@@ -1,7 +1,7 @@
-package ru.skillbox.paymentservice.dto;
+package ru.skillbox.inventoryservice.dto;
 
-import lombok.Data;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data

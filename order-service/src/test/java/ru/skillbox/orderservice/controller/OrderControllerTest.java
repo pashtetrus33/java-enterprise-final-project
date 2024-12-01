@@ -14,8 +14,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.skillbox.orderservice.model.*;
 import ru.skillbox.orderservice.dto.OrderDto;
 import ru.skillbox.orderservice.dto.StatusDto;
-import ru.skillbox.orderservice.model.enums.OrderStatus;
-import ru.skillbox.orderservice.model.enums.ServiceName;
+import ru.skillbox.orderservice.dto.enums.OrderStatus;
+import ru.skillbox.orderservice.dto.enums.ServiceName;
 import ru.skillbox.orderservice.service.OrderService;
 
 import java.util.Optional;
@@ -46,7 +46,7 @@ public class OrderControllerTest {
     @Test
     void addOrderSuccessTest() throws Exception {
         OrderDto orderDto = new OrderDto("product", "testDepartureAddress",
-                "testDestinationAddress",100L);
+                "testDestinationAddress",100L, 2);
 
         MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
         mockHttpServletRequest.addHeader("id", 1L);

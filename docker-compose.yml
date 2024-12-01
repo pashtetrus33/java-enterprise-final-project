@@ -6,7 +6,7 @@ services:
       - "5432:5432"
     restart: always
     environment:
-      - POSTGRES_MULTIPLE_DATABASES="order_db","auth_user_db","payment_db" # TODO add here other databases if needed
+      - POSTGRES_MULTIPLE_DATABASES="order_db","auth_user_db","payment_db","inventory_db"
       - POSTGRES_USER=postgre_user
       - POSTGRES_PASSWORD=postgre_secret_password
     volumes:
@@ -34,7 +34,6 @@ services:
       KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
-      KAFKA_CREATE_TOPICS: "order:1:1,payment:1:1,order-error:1:1,payment-error:1:1,inventory:1:1"
     volumes:
       - kafka:/data
     restart: on-failure

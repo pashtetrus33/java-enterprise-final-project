@@ -1,4 +1,4 @@
-package ru.skillbox.orderservice.model.enums;
+package ru.skillbox.orderservice.dto.enums;
 
 public enum ServiceName {
 

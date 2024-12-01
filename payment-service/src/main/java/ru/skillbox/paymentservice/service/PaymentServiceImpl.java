@@ -90,6 +90,7 @@ public class PaymentServiceImpl implements PaymentService {
             balance.setBalance(balance.getBalance() + paymentDetails.getSum());
             balanceRepository.save(balance);
             paymentDetailsRepository.delete(paymentDetails);
+            paymentDetailsRepository.flush();
 
             kafkaService.produce(errorKafkaDto);
 

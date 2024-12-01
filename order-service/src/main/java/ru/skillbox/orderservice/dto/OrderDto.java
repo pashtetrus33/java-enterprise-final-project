@@ -14,4 +14,6 @@ public class OrderDto {
     private String destinationAddress;
 
     private Long cost;
+
+    private Integer quantity;
 }

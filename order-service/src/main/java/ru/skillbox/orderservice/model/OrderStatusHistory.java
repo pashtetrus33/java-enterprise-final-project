@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import ru.skillbox.orderservice.model.enums.OrderStatus;
-import ru.skillbox.orderservice.model.enums.ServiceName;
+import ru.skillbox.orderservice.dto.enums.OrderStatus;
+import ru.skillbox.orderservice.dto.enums.ServiceName;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package ru.skillbox.paymentservice.dto.enums;
+package ru.skillbox.inventoryservice.dto.enums;
 
 public enum OrderStatus {
     REGISTERED,

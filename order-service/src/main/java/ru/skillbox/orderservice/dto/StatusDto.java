@@ -3,8 +3,8 @@ package ru.skillbox.orderservice.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.skillbox.orderservice.model.enums.OrderStatus;
-import ru.skillbox.orderservice.model.enums.ServiceName;
+import ru.skillbox.orderservice.dto.enums.OrderStatus;
+import ru.skillbox.orderservice.dto.enums.ServiceName;
 
 @Data
 @AllArgsConstructor

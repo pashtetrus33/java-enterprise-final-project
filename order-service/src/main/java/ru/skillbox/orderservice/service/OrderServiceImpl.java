@@ -9,8 +9,8 @@ import ru.skillbox.orderservice.model.*;
 import ru.skillbox.orderservice.dto.OrderDto;
 import ru.skillbox.orderservice.dto.PaymentKafkaDto;
 import ru.skillbox.orderservice.dto.StatusDto;
-import ru.skillbox.orderservice.model.enums.OrderStatus;
-import ru.skillbox.orderservice.model.enums.ServiceName;
+import ru.skillbox.orderservice.dto.enums.OrderStatus;
+import ru.skillbox.orderservice.dto.enums.ServiceName;
 import ru.skillbox.orderservice.repository.OrderRepository;
 
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +45,7 @@ public class OrderServiceImpl implements OrderService {
                 orderDto.getDescription(),
                 orderDto.getCost(),
                 userId,
+                orderDto.getQuantity(),
                 OrderStatus.REGISTERED
         );
         newOrder.addStatusHistory(newOrder.getStatus(), ServiceName.ORDER_SERVICE, "Order created");
