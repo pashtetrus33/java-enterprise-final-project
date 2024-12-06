@@ -67,28 +67,36 @@ public class InventoryServiceImpl implements InventoryService {
     public void returnInventory(ErrorKafkaDto errorKafkaDto) {
         try {
             Long orderId = errorKafkaDto.getOrderId();
-            List<InvoiceInventory> invoiceInventories
-                    = invoiceInventoryRepository.findByInvoice_OrderId(orderId);
 
-            List<Inventory> updatedInventoryList = new ArrayList<>();
+            // Получение связанных записей
+            List<InvoiceInventory> invoiceInventories = invoiceInventoryRepository.findByInvoice_OrderId(orderId);
+
+            // Обновление количества на складе
             invoiceInventories.forEach(invoiceInventory -> {
                 Inventory inventory = invoiceInventory.getInventory();
                 inventory.setQuantity(inventory.getQuantity() + invoiceInventory.getQuantity());
-                updatedInventoryList.add(inventory);
+                inventoryRepository.save(inventory); // Сохраняем изменения
             });
 
-            inventoryRepository.saveAll(updatedInventoryList);
+
+            invoiceInventoryRepository.deleteAll(invoiceInventories);
+            invoiceInventoryRepository.flush();
+            // Удаление счета по заказу
             invoiceRepository.deleteByOrderId(orderId);
 
+            // Отправка сообщения в Kafka
             kafkaService.produce(errorKafkaDto);
 
         } catch (Exception ex) {
+            // Формирование ошибки
             StatusDto statusDto = createStatusDto(OrderStatus.UNEXPECTED_FAILURE, ex.getMessage());
             kafkaService.produce(createErrorKafkaDto(errorKafkaDto.getOrderId(), statusDto));
 
-            throw new RuntimeException(ex.getMessage());
+            // Оригинальное исключение для отката транзакции
+            throw ex;
         }
     }
+
 
     @Override
     public void replenishInventory(long inventoryId, QuantityDto quantityDto) throws InventoryNotFoundException {

@@ -23,8 +23,4 @@ public class Inventory {
 
     @JsonIgnore
     private Integer costPerItem;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "inventory")
-    private Set<InvoiceInventory> invoiceInventorySet = new HashSet<>();
 }

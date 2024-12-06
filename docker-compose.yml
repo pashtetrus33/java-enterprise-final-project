@@ -6,7 +6,7 @@ services:
       - "5432:5432"
     restart: always
     environment:
-      - POSTGRES_MULTIPLE_DATABASES="order_db","auth_user_db","payment_db","inventory_db"
+      - POSTGRES_MULTIPLE_DATABASES="order_db","auth_user_db","payment_db","inventory_db","delivery_db"
       - POSTGRES_USER=postgre_user
       - POSTGRES_PASSWORD=postgre_secret_password
     volumes:

@@ -1,26 +1,25 @@
-package ru.skillbox.inventoryservice.model;
+package ru.skillbox.deliveryservice.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
-@Table(name = "invoices")
-@Setter
-@Getter
-public class Invoice {
+@Table(name = "deliveries")
+@Data
+public class Delivery {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long orderId;
+    private Long invoiceId;
+
+    private String destinationAddress;
+
+    private String departureAddress;
 
     @CreationTimestamp
     private LocalDateTime creationDate;
