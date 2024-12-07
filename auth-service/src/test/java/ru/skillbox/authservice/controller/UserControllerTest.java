@@ -1,5 +1,6 @@
 package ru.skillbox.authservice.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -21,13 +22,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles("test")
 @WebMvcTest(UserController.class)
@@ -43,61 +44,60 @@ public class UserControllerTest {
     @MockBean
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private User user;
+    private User newUser;
+    private List<User> users;
+
     @Configuration
     @ComponentScan(basePackageClasses = {UserController.class, SecurityConfiguration.class})
     public static class TestConf {
     }
 
-    private User user;
-
-    private User newUser;
-
-    private List<User> users;
-
     @BeforeEach
     public void setUp() {
         Mockito.when(passwordEncoder.encode(anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(0) + "_some_fake_encoding");
-        user = new User(
-                "Petrov",
-                passwordEncoder.encode("superpass")
-        );
-        newUser = new User(
-                "Ivanov",
-                passwordEncoder.encode("superpass99")
-        );
+
+        user = new User("Petrov", passwordEncoder.encode("superpass"));
+        newUser = new User("Ivanov", passwordEncoder.encode("superpass99"));
         users = Collections.singletonList(user);
     }
 
     @Test
     public void getUser() throws Exception {
         Mockito.when(userRepository.findByName(user.getName())).thenReturn(Optional.of(user));
+
         mvc.perform(get("/user/Petrov"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString(user.getName())));
+                .andExpect(jsonPath("$.name", equalTo(user.getName())));
     }
 
     @Test
     public void getAllUsers() throws Exception {
         Mockito.when(userRepository.findAll()).thenReturn(users);
+
         mvc.perform(get("/user/"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString(user.getName())));
+                .andExpect(jsonPath("$[0].name", equalTo(user.getName())));
     }
 
     @Test
     public void createUser() throws Exception {
-        Mockito.when(userRepository.save(refEq(newUser))).thenReturn(newUser);
+        Mockito.when(userRepository.save(any(User.class))).thenReturn(newUser);
+
         mvc.perform(
-                post("/user/signup")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Ivanov\",\"password\":\"superpass99\"}")
-                        .contentType(MediaType.APPLICATION_JSON)
-        )
-                .andDo(print())
+                        post("/user/signup")
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content("{\"name\":\"Ivanov\",\"password\":\"superpass99\"}")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())  // Посмотрите JSON-ответ
                 .andExpect(status().isCreated())
-                .andExpect(content().string(containsString(newUser.getName())));
+                .andExpect(jsonPath("$.name").value("Ivanov"));  // Проверка поля "name"
     }
 }

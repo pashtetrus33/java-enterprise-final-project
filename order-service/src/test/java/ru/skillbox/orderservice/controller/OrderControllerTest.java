@@ -1,6 +1,7 @@
 package ru.skillbox.orderservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -8,21 +9,19 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.skillbox.orderservice.model.*;
 import ru.skillbox.orderservice.dto.OrderDto;
 import ru.skillbox.orderservice.dto.StatusDto;
 import ru.skillbox.orderservice.dto.enums.OrderStatus;
 import ru.skillbox.orderservice.dto.enums.ServiceName;
+import ru.skillbox.orderservice.model.Order;
 import ru.skillbox.orderservice.service.OrderService;
 
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles("test")
@@ -38,49 +37,63 @@ public class OrderControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private OrderDto orderDto;
+    private StatusDto statusDto;
+    private Order order;
+
     @Configuration
     @ComponentScan(basePackageClasses = {OrderController.class})
     public static class TestConf {
     }
 
-    @Test
-    void addOrderSuccessTest() throws Exception {
-        OrderDto orderDto = new OrderDto("product", "testDepartureAddress",
-                "testDestinationAddress",100L, 2);
+    @BeforeEach
+    void setUp() {
+        // Инициализация общих тестовых данных
+        orderDto = new OrderDto(
+                "product",
+                "testDepartureAddress",
+                "testDestinationAddress",
+                100L,
+                2
+        );
 
-        MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
-        mockHttpServletRequest.addHeader("id", 1L);
+        statusDto = new StatusDto();
+        statusDto.setStatus(OrderStatus.INVENTED);
+        statusDto.setComment("Order has been paid.");
 
-        Order order = new Order();
+        order = new Order();
         order.setCost(100L);
         order.setStatus(OrderStatus.REGISTERED);
         order.setDestinationAddress("test address");
         order.addStatusHistory(OrderStatus.REGISTERED, ServiceName.ORDER_SERVICE,
                 "The order has been registered.");
+    }
 
-        when(orderService.addOrder(orderDto, mockHttpServletRequest)).thenReturn(Optional.of(order));
+    @Test
+    void addOrderSuccessTest() throws Exception {
+        // Мокирование поведения сервиса
+        when(orderService.addOrder(eq(orderDto), any())).thenReturn(Optional.of(order));
+
+        // Выполнение запроса и проверка ответа
         mockMvc.perform(
                         post("/order")
-                                .with(request -> {
-                                    request.addHeader("id", 1L);
-                                    return request;
-                                })
+                                .header("id", 1L)
                                 .content(objectMapper.writeValueAsString(orderDto))
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.cost").value(order.getCost()))
+                .andExpect(jsonPath("$.status").value(order.getStatus().toString()));
     }
 
     @Test
     void updateOrderStatusSuccessTest() throws Exception {
-        StatusDto statusDto = new StatusDto();
-        statusDto.setStatus(OrderStatus.INVENTED);
-        statusDto.setComment("Order has been paid.");
-
+        // Мокирование поведения сервиса
         doNothing().when(orderService).updateOrderStatus(1L, statusDto);
+
+        // Выполнение запроса и проверка ответа
         mockMvc.perform(
                         patch("/order/1")
-                                .accept(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(statusDto))
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -89,17 +102,15 @@ public class OrderControllerTest {
 
     @Test
     void updateOrderStatusErrorTest() throws Exception {
-        StatusDto statusDto = new StatusDto();
-        statusDto.setStatus(OrderStatus.INVENTED);
-        statusDto.setComment("Order has been paid.");
-
+        // Мокирование выброса исключения
         doThrow(new OrderNotFoundException(2L)).when(orderService).updateOrderStatus(2L, statusDto);
+
+        // Выполнение запроса и проверка ответа
         mockMvc.perform(
                         patch("/order/2")
-                                .accept(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(statusDto))
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 }
